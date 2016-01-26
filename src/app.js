@@ -12,6 +12,26 @@ var ajax = require('ajax');
 
 var Vector2 = require('vector2');
 
+ var parseFeed = function(data, quantity) {
+      var items = [];
+      for(var i = 0; i < quantity; i++) {
+//         always uppercase the description string
+        var title = data.list[i].weather[0].main;
+        title = title.charAt(0).toUpperCase() + title.substring(1);
+            
+//         get data/time substring
+        var time = data.list[i].dt_txt;
+        time = time.substring(time.indexOf('-') + 1, time.indexOf(':') + 3);
+        
+//         add to menu items array
+        items.push({
+          title: title,
+          subtitle: time
+        });
+      }
+//       return whole array
+      return items;
+    };
 // show splash screen while waiting for data
 var splashWindow = new UI.Window();
 
@@ -42,26 +62,7 @@ ajax(
     type: 'json'
   },
   function(data){
-    var parseFeed = function(data, quantity) {
-      var items = [];
-      for(var i = 0; i < quantity; i++) {
-//         always uppercase the description string
-        var title = data.list[i].weather[0].main;
-        title = title.charAt(0).toUpperCase() + title.substring(1);
-            
-//         get data/time substring
-        var time = data.list[i].dt_txt;
-        time = time.substring(time.indexOf('-') + 1, time.indexOf(':') + 3);
-        
-//         add to menu items array
-        items.push({
-          title: title,
-          subtitle: time
-        });
-      }
-//       return whole array
-      return items;
-    };
+   
 //   create an array of menu items
     var menuItems = parseFeed(data, 10);
     
