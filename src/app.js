@@ -13,7 +13,7 @@ var ajax = require('ajax');
 var Vector2 = require('vector2');
 
 // show splash screen while waiting for data
-var splashWindow = new UI.window();
+var splashWindow = new UI.Window();
 
 // text element to inform the user
 var text = new UI.Text({
@@ -42,7 +42,43 @@ ajax(
     type: 'json'
   },
   function(data){
+    var parseFeed = function(data, quantity) {
+      var items = [];
+      for(var i = 0; i < quantity; i++) {
+//         always uppercase the description string
+        var title = data.list[i].weather[0].main;
+        title = title.charAt(0).toUpperCase() + title.substring(1);
+            
+//         get data/time substring
+        var time = data.list[i].dt_txt;
+        time = time.substring(time.indexOf('-') + 1, time.indexOf(':') + 3);
+        
+//         add to menu items array
+        items.push({
+          title: title,
+          subtitle: time
+        });
+      }
+//       return whole array
+      return items;
+    };
+//   create an array of menu items
+    var menuItems = parseFeed(data, 10);
     
+//   check the items are extracted correctly
+    for (var i = 0; i < menuItems.length; i++) {
+      console.log(menuItems[i].title + ' | ' + menuItems[i].subtitle);
+    }
+//     construct menu to show to user
+    var resultsMenu = new UI.Menu({
+      sections: [{
+        title: 'Current Forecast',
+        items: menuItems
+      }]
+    });
+//      show the menu, hide the splash
+    resultsMenu.show();
+    splashWindow.hide();
   },
   function(error) {
     console.log('Download failed: ' + error);
