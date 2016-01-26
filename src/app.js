@@ -5,58 +5,46 @@
  */
 
 var UI = require('ui');
-var Vector2 = require('vector2');
+var ajax = require('ajax');
 
-var main = new UI.Card({
-  title: 'Pebble.js',
-  icon: 'images/menu_icon.png',
-  subtitle: 'Hello World!',
-  body: 'Press any button.',
-  subtitleColor: 'indigo', // Named colors
-  bodyColor: '#9a0036' // Hex colors
+// create a card with title and subtitle
+var card = new UI.Card({
+  title: 'Weather',
+  subtitle: 'Fetching...'
 });
 
-main.show();
+// display the card
+card.show();
 
-main.on('click', 'up', function(e) {
-  var menu = new UI.Menu({
-    sections: [{
-      items: [{
-        title: 'Pebble.js',
-        icon: 'images/menu_icon.png',
-        subtitle: 'Can do Menus'
-      }, {
-        title: 'Second Item',
-        subtitle: 'Subtitle Text'
-      }]
-    }]
-  });
-  menu.on('select', function(e) {
-    console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
-    console.log('The item is titled "' + e.item.title + '"');
-  });
-  menu.show();
-});
+// construct url for the ajax call
+var cityName = 'Orlando';
+var myAPIKey = 'caaf81a949398c16c9f8931faba0562e';
+var URL = 'http://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=' + myAPIKey;
 
-main.on('click', 'select', function(e) {
-  var wind = new UI.Window({
-    fullscreen: true,
-  });
-  var textfield = new UI.Text({
-    position: new Vector2(0, 65),
-    size: new Vector2(144, 30),
-    font: 'gothic-24-bold',
-    text: 'Text Anywhere!',
-    textAlign: 'center'
-  });
-  wind.add(textfield);
-  wind.show();
-});
+// make the request to the api
+ajax(
+{
+  url: URL,
+  type: 'json'
+},
+function(data) {
+//   success
+  console.log('Successfully fetched weather data!');
+  
+//   extract data and adjust temp from Kelvin to Celcius
+  var location = data.name;
+  var temperature = Math.round(data.main.temp - 273.15) + 'C';
+  
+//   always upper-case first letter of description
+  var description = data.weather[0].description;
+  description = description.charAt(0).toUpperCase() + description.substring(1);
 
-main.on('click', 'down', function(e) {
-  var card = new UI.Card();
-  card.title('A Card');
-  card.subtitle('Is a Window');
-  card.body('The simplest window type in Pebble.js.');
-  card.show();
-});
+//   show data to user by accessing card object
+  card.subtitle(location + ', ' + temperature);
+  card.body(description);
+},
+function(error) {
+//   failure
+  console.log('Failed fetching weather data: ' + error);
+}
+);
